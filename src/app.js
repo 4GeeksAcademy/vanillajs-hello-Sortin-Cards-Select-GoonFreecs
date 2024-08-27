@@ -6,107 +6,151 @@ import "./assets/img/rigo-baby.jpg";
 import "./assets/img/4geeks.ico";
 
 window.onload = function() {
-  let suits = ["♦", "♥", "♠", "♣"];
-  let numbers = ["A", "2", "3", "4", "5", "6", "7", "8", "9", "J", "Q", "K"];
+  // Lista de palos de la baraja
+  const palos = ["♠", "♥", "♦", "♣"];
 
-  function generateRandomCard() {
-    const suitIndex = Math.floor(Math.random() * suits.length);
-    const numberIndex = Math.floor(Math.random() * numbers.length);
+  // Lista de valores de las cartas (1 al 13)
+  const valores = [
+    "1",
+    "2",
+    "3",
+    "4",
+    "5",
+    "6",
+    "7",
+    "8",
+    "9",
+    "10",
+    "11",
+    "12",
+    "13"
+  ];
 
-    const suit = suits[suitIndex];
-    const number = numbers[numberIndex];
-
-    return { suit, number };
+  // Función para convertir valores numéricos a los valores tradicionales de cartas
+  function convertirValor(valor) {
+    if (valor === "1") return "A";
+    if (valor === "11") return "J";
+    if (valor === "12") return "Q";
+    if (valor === "13") return "K";
+    return valor;
   }
 
-  function displayCards(cards) {
-    const container = document.getElementById("cardsContainer");
-    container.innerHTML = "";
-    cards.forEach(card => {
-      const cardDiv = document.createElement("div");
-      cardDiv.className = "card";
-      cardDiv.innerHTML = `
-        <div class="top-suit" style="color:${
-          card.suit === "♦" || card.suit === "♥" ? "red" : "black"
-        }">${card.suit}</div>
-        <div class="number">${card.number}</div>
-        <div class="bottom-suit" style="color:${
-          card.suit === "♦" || card.suit === "♥" ? "red" : "black"
-        }">${card.suit}</div>
-      `;
-      container.appendChild(cardDiv);
+  // Función para generar una carta aleatoria
+  function generarCartaAleatoria() {
+    const paloAleatorio = palos[Math.floor(Math.random() * palos.length)];
+    const valorAleatorio = valores[Math.floor(Math.random() * valores.length)];
+    const valorConvertido = convertirValor(valorAleatorio);
+    return valorConvertido + paloAleatorio;
+  }
+
+  // Función para generar un conjunto de cartas
+  function generarCartas() {
+    let numeroDeCartas = document.getElementById("numCards").value;
+    numeroDeCartas = parseInt(numeroDeCartas);
+    const cartas = [];
+    for (let i = 0; i < numeroDeCartas; i++) {
+      cartas.push(generarCartaAleatoria());
+    }
+    mostrarCartas(cartas);
+    limpiarHistorialOrdenamiento();
+    return cartas;
+  }
+
+  // Función para mostrar las cartas en la pantalla
+  function mostrarCartas(cartas) {
+    const contenedor = document.getElementById("currentCards");
+    contenedor.innerHTML = "";
+    cartas.forEach(carta => {
+      const elementoCarta = document.createElement("div");
+      elementoCarta.className = `card ${
+        carta.includes("♥") || carta.includes("♦") ? "red" : "black"
+      }`;
+      elementoCarta.textContent = carta;
+      contenedor.appendChild(elementoCarta);
     });
   }
 
-  function generateCards(num) {
-    let cards = [];
-    for (let i = 0; i < num; i++) {
-      cards.push(generateRandomCard());
-    }
-    return cards;
-  }
+  // Función para ordenar las cartas usando el método de selección
+  function ordenarCartas(cartas) {
+    const cartasParaOrdenar = cartas.slice(); // Crear una copia para no modificar la lista original
+    const historial = [];
 
-  function drawCards() {
-    const numCards = parseInt(document.getElementById("numCards").value);
-    if (!isNaN(numCards) && numCards > 0) {
-      const cards = generateCards(numCards);
-      displayCards(cards);
-      return cards;
-    }
-    return [];
-  }
-
-  function compareCards(cardA, cardB) {
-    const valueOrder =
-      numbers.indexOf(cardA.number) - numbers.indexOf(cardB.number);
-    if (valueOrder === 0) {
-      return suits.indexOf(cardA.suit) - suits.indexOf(cardB.suit);
-    }
-    return valueOrder;
-  }
-
-  function selectionSort(cards) {
-    let sortedCards = [...cards];
-    let logChanges = [];
-    for (let i = 0; i < sortedCards.length; i++) {
-      let minIndex = i;
-      for (let j = i + 1; j < sortedCards.length; j++) {
-        if (compareCards(sortedCards[j], sortedCards[minIndex]) < 0) {
-          minIndex = j;
+    for (let i = 0; i < cartasParaOrdenar.length - 1; i++) {
+      let indiceMenor = i;
+      for (let j = i + 1; j < cartasParaOrdenar.length; j++) {
+        if (
+          compararCartas(cartasParaOrdenar[j], cartasParaOrdenar[indiceMenor]) <
+          0
+        ) {
+          indiceMenor = j;
         }
       }
-      if (minIndex !== i) {
-        [sortedCards[i], sortedCards[minIndex]] = [
-          sortedCards[minIndex],
-          sortedCards[i]
-        ];
-        logChanges.push([...sortedCards]);
+
+      // Registrar el estado actual de las cartas incluso si no hay intercambio
+      historial.push([...cartasParaOrdenar]);
+
+      if (indiceMenor !== i) {
+        const temp = cartasParaOrdenar[i];
+        cartasParaOrdenar[i] = cartasParaOrdenar[indiceMenor];
+        cartasParaOrdenar[indiceMenor] = temp;
+
+        // Registrar el estado de las cartas después de realizar un intercambio
+        historial.push([...cartasParaOrdenar]);
       }
     }
-    return { sortedCards, logChanges };
+
+    mostrarHistorialOrdenamiento(historial); // Mostrar todo el historial de pasos
   }
 
-  function displayChanges(logChanges) {
-    const logContainer = document.getElementById("changesLog");
-    logContainer.innerHTML = "";
-    logChanges.forEach((change, index) => {
-      const changeDiv = document.createElement("div");
-      changeDiv.innerHTML = `Cambio ${index + 1}: ${change
-        .map(card => `${card.number}${card.suit}`)
-        .join(", ")}`;
-      logContainer.appendChild(changeDiv);
+  // Función para comparar dos cartas (basada en los índices de valores)
+  function compararCartas(carta1, carta2) {
+    const valor1 = carta1.slice(0, -1);
+    const valor2 = carta2.slice(0, -1);
+    const indice1 = valores.indexOf(valor1);
+    const indice2 = valores.indexOf(valor2);
+    return indice1 - indice2;
+  }
+
+  // Función para mostrar el historial de ordenamiento
+  function mostrarHistorialOrdenamiento(historial) {
+    const contenedor = document.getElementById("sortHistory");
+    contenedor.innerHTML = "";
+    historial.forEach(paso => {
+      // Eliminé el "index" para evitar que se muestre
+      const elementoPaso = document.createElement("div");
+      elementoPaso.className = "sort-step";
+
+      const contenedorCartas = document.createElement("div");
+      contenedorCartas.className = "card-container";
+      paso.forEach(carta => {
+        const elementoCarta = document.createElement("div");
+        elementoCarta.className = `card ${
+          carta.includes("♥") || carta.includes("♦") ? "red" : "black"
+        }`;
+        elementoCarta.textContent = carta;
+        contenedorCartas.appendChild(elementoCarta);
+      });
+      elementoPaso.appendChild(contenedorCartas);
+      contenedor.appendChild(elementoPaso);
     });
   }
 
-  let currentCards = [];
+  // Función para limpiar el historial de ordenamiento
+  function limpiarHistorialOrdenamiento() {
+    document.getElementById("sortHistory").innerHTML = "";
+  }
 
-  document.getElementById("drawButton").addEventListener("click", function() {
-    currentCards = drawCards();
+  // Agregar eventos a los botones
+  document
+    .getElementById("generateBtn")
+    .addEventListener("click", generarCartas);
+  document.getElementById("sortBtn").addEventListener("click", function() {
+    const cartasActuales = Array.from(
+      document.querySelectorAll("#currentCards .card")
+    ).map(card => card.textContent);
+    ordenarCartas(cartasActuales);
   });
 
-  document.getElementById("sortButton").addEventListener("click", function() {
-    const { sortedCards, logChanges } = selectionSort(currentCards);
-    displayCards(sortedCards);
-    displayChanges(logChanges);
-  });
+  // Generar cartas iniciales
+  generarCartas();
 };

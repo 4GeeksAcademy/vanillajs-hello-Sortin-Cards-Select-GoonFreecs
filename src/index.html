@@ -14,19 +14,20 @@
   </head>
   <body>
     <div class="container">
-      <div>
-        <label for="numCards" class="form-label">Número de cartas:</label>
-        <input
-          type="text"
-          id="numCards"
-          class="form-control"
-          placeholder="Ingrese la cantidad de cartas"
-        />
+      <h1>Generador y Ordenador de Cartas</h1>
+      <div class="controls">
+        <input type="text" id="numCards" placeholder="Número de cartas" />
+        <button id="generateBtn">Draw</button>
+        <button id="sortBtn">Ordenar</button>
       </div>
-      <button id="drawButton">Generador</button>
-      <button id="sortButton">Orden</button>
-      <div id="cardsContainer"></div>
-      <div id="changesLog" class="mt-4"></div>
+      <div>
+        <h2>Cartas Actuales:</h2>
+        <div id="currentCards" class="card-container"></div>
+      </div>
+      <div>
+        <h2>Historial de Ordenamiento:</h2>
+        <div id="sortHistory"></div>
+      </div>
     </div>
     <script src="script.js"></script>
   </body>
