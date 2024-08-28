@@ -6,10 +6,8 @@ import "./assets/img/rigo-baby.jpg";
 import "./assets/img/4geeks.ico";
 
 window.onload = function() {
-  // Lista de palos de la baraja
   const palos = ["♠", "♥", "♦", "♣"];
 
-  // Lista de valores de las cartas (1 al 13)
   const valores = [
     "1",
     "2",
@@ -26,7 +24,6 @@ window.onload = function() {
     "13"
   ];
 
-  // Función para convertir valores numéricos a los valores tradicionales de cartas
   function convertirValor(valor) {
     if (valor === "1") return "A";
     if (valor === "11") return "J";
@@ -35,7 +32,6 @@ window.onload = function() {
     return valor;
   }
 
-  // Función para generar una carta aleatoria
   function generarCartaAleatoria() {
     const paloAleatorio = palos[Math.floor(Math.random() * palos.length)];
     const valorAleatorio = valores[Math.floor(Math.random() * valores.length)];
@@ -43,7 +39,6 @@ window.onload = function() {
     return valorConvertido + paloAleatorio;
   }
 
-  // Función para generar un conjunto de cartas
   function generarCartas() {
     let numeroDeCartas = document.getElementById("numCards").value;
     numeroDeCartas = parseInt(numeroDeCartas);
@@ -52,11 +47,9 @@ window.onload = function() {
       cartas.push(generarCartaAleatoria());
     }
     mostrarCartas(cartas);
-    limpiarHistorialOrdenamiento();
     return cartas;
   }
 
-  // Función para mostrar las cartas en la pantalla
   function mostrarCartas(cartas) {
     const contenedor = document.getElementById("currentCards");
     contenedor.innerHTML = "";
@@ -70,9 +63,8 @@ window.onload = function() {
     });
   }
 
-  // Función para ordenar las cartas usando el método de selección
   function ordenarCartas(cartas) {
-    const cartasParaOrdenar = cartas.slice(); // Crear una copia para no modificar la lista original
+    const cartasParaOrdenar = cartas.slice();
     const historial = [];
 
     for (let i = 0; i < cartasParaOrdenar.length - 1; i++) {
@@ -86,7 +78,6 @@ window.onload = function() {
         }
       }
 
-      // Registrar el estado actual de las cartas incluso si no hay intercambio
       historial.push([...cartasParaOrdenar]);
 
       if (indiceMenor !== i) {
@@ -94,29 +85,35 @@ window.onload = function() {
         cartasParaOrdenar[i] = cartasParaOrdenar[indiceMenor];
         cartasParaOrdenar[indiceMenor] = temp;
 
-        // Registrar el estado de las cartas después de realizar un intercambio
         historial.push([...cartasParaOrdenar]);
       }
     }
 
-    mostrarHistorialOrdenamiento(historial); // Mostrar todo el historial de pasos
+    mostrarHistorialOrdenamiento(historial);
   }
 
-  // Función para comparar dos cartas (basada en los índices de valores)
   function compararCartas(carta1, carta2) {
     const valor1 = carta1.slice(0, -1);
     const valor2 = carta2.slice(0, -1);
-    const indice1 = valores.indexOf(valor1);
-    const indice2 = valores.indexOf(valor2);
-    return indice1 - indice2;
+
+    function obtenerValorNumerico(valor) {
+      if (valor === "A") return 1;
+      if (valor === "K") return 13;
+      if (valor === "Q") return 12;
+      if (valor === "J") return 11;
+      return parseInt(valor);
+    }
+
+    const valorNumerico1 = obtenerValorNumerico(valor1);
+    const valorNumerico2 = obtenerValorNumerico(valor2);
+
+    return valorNumerico1 - valorNumerico2;
   }
 
-  // Función para mostrar el historial de ordenamiento
   function mostrarHistorialOrdenamiento(historial) {
     const contenedor = document.getElementById("sortHistory");
     contenedor.innerHTML = "";
     historial.forEach(paso => {
-      // Eliminé el "index" para evitar que se muestre
       const elementoPaso = document.createElement("div");
       elementoPaso.className = "sort-step";
 
@@ -135,12 +132,6 @@ window.onload = function() {
     });
   }
 
-  // Función para limpiar el historial de ordenamiento
-  function limpiarHistorialOrdenamiento() {
-    document.getElementById("sortHistory").innerHTML = "";
-  }
-
-  // Agregar eventos a los botones
   document
     .getElementById("generateBtn")
     .addEventListener("click", generarCartas);
@@ -151,6 +142,5 @@ window.onload = function() {
     ordenarCartas(cartasActuales);
   });
 
-  // Generar cartas iniciales
   generarCartas();
 };
